@@ -1,239 +1,350 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-<meta charset="UTF-8">
-<title>FoodyLens</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FoodyLens</title>
+    <style>
+        :root {
+            --accent: #00d2ff;
+            --protein: #ff416c;
+            --fat: #ffb347;
+            --carbs: #45b649;
+            --glass: rgba(255, 255, 255, 0.08);
+        }
 
-<style>
-* { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+        }
 
-body {
-    margin: 0;
-    height: 100vh;
-    font-family: Arial, sans-serif;
-    background: radial-gradient(circle at top, #1a1a2e, #0f0f1a);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-}
+        .card {
+            width: 100%;
+            max-width: 440px;
+            background: var(--glass);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 40px;
+            padding: 35px;
+            box-shadow: 0 40px 100px rgba(0,0,0,0.6);
+            text-align: center;
+        }
 
-.container {
-    backdrop-filter: blur(25px);
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 25px;
-    padding: 30px;
-    width: 380px;
-    text-align: center;
-    box-shadow: 0 0 40px rgba(0,0,0,0.6);
-    animation: fadeIn 1s ease;
-}
+        h1 { font-weight: 800; font-size: 26px; margin: 0 0 10px; text-transform: uppercase; letter-spacing: 2px; }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
+        .sub-header { color: #aaa; font-size: 14px; margin-bottom: 25px; }
 
-h1 { margin-bottom: 10px; }
+        .btn-main {
+            background: linear-gradient(45deg, #00d2ff, #3a7bd5);
+            border: none;
+            padding: 18px 30px;
+            border-radius: 20px;
+            color: white;
+            font-weight: 700;
+            font-size: 16px;
+            width: 100%;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 10px 20px rgba(0, 210, 255, 0.3);
+        }
 
-select {
-    background: rgba(255,255,255,0.1);
-    border: none;
-    color: white;
-    padding: 10px;
-    border-radius: 10px;
-}
+        .btn-main:hover { transform: translateY(-3px); box-shadow: 0 15px 30px rgba(0, 210, 255, 0.5); }
 
-button {
-    margin-top: 15px;
-    padding: 12px 20px;
-    border-radius: 15px;
-    border: none;
-    background: linear-gradient(135deg, #00c6ff, #0072ff);
-    color: white;
-    cursor: pointer;
-    transition: 0.3s;
-}
+        #preview {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            border-radius: 25px;
+            margin-top: 25px;
+            display: none;
+            border: 2px solid rgba(255,255,255,0.1);
+        }
 
-button:hover {
-    transform: scale(1.05);
-}
+        .results-container { margin-top: 30px; display: none; }
 
-#preview {
-    margin-top: 20px;
-    width: 100%;
-    border-radius: 15px;
-    display: none;
-    animation: fadeIn 0.5s ease;
-}
+        .food-name { font-size: 24px; font-weight: 700; color: var(--accent); margin-bottom: 20px; text-transform: capitalize; }
 
-#result {
-    margin-top: 20px;
-    font-size: 20px;
-    font-weight: bold;
-    min-height: 40px;
-}
+        .stats-table {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
 
-#info {
-    margin-top: 10px;
-    font-size: 16px;
-    opacity: 0.9;
-}
+        .stat-item {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 22px;
+            text-align: center;
+        }
 
-.loader {
-    border: 4px solid rgba(255,255,255,0.1);
-    border-top: 4px solid #00c6ff;
-    border-radius: 50%;
-    width: 30px;
-    height: 30px;
-    margin: 20px auto;
-    animation: spin 1s linear infinite;
-    display: none;
-}
+        .val { display: block; font-size: 18px; font-weight: 800; }
+        .lab { font-size: 11px; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px; }
 
-@keyframes spin {
-    100% { transform: rotate(360deg); }
-}
-</style>
+        .loader {
+            display: none;
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255,255,255,0.1);
+            border-left-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        select { background: rgba(255,255,255,0.1); border: 1px solid #555; color: white; border-radius: 10px; padding: 8px; margin-bottom: 10px;}
+    </style>
 </head>
 <body>
 
-<div class="container">
+<div class="card">
+    <h1>FoodyLens <span style="color:var(--accent)">AI</span></h1>
+    <div class="sub-header">Nutrition Scanner</div>
 
-<h1>FoodyLens</h1>
+    <select id="lang">
+        <option value="uk">Українська (UA)</option>
+        <option value="en">English (EN)</option>
+    </select>
 
-<select id="lang">
-    <option value="uk">Українська</option>
-    <option value="en">English</option>
-</select>
+    <div style="margin-top: 10px;">
+        <button class="btn-main" id="uploadBtn" onclick="document.getElementById('imageInput').click()">
+            СКАНУВАТИ ЇЖУ
+        </button>
+    </div>
 
-<br>
+    <input type="file" id="imageInput" accept="image/*" style="display:none">
+    <img id="preview">
+    <div class="loader" id="loader"></div>
 
-<button onclick="document.getElementById('imageInput').click()">
-    Upload Image
-</button>
-
-<input type="file" id="imageInput" accept="image/*" style="display:none">
-
-<img id="preview">
-
-<div class="loader" id="loader"></div>
-
-<div id="result">Завантаження...</div>
-<div id="info"></div>
-
+    <div class="results-container" id="results">
+        <div class="food-name" id="foodName">Apple</div>
+        <div class="stats-table">
+            <div class="stat-item" style="border-top: 3px solid var(--accent)">
+                <span class="val" id="res-cal">0</span>
+                <span class="lab" id="lab-cal">Ккал</span>
+            </div>
+            <div class="stat-item" style="border-top: 3px solid var(--protein)">
+                <span class="val" id="res-p">0</span>
+                <span class="lab" id="lab-p">Білки</span>
+            </div>
+            <div class="stat-item" style="border-top: 3px solid var(--fat)">
+                <span class="val" id="res-f">0</span>
+                <span class="lab" id="lab-f">Жири</span>
+            </div>
+            <div class="stat-item" style="border-top: 3px solid var(--carbs)">
+                <span class="val" id="res-c">0</span>
+                <span class="lab" id="lab-c">Вуглеводи</span>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
 
 <script>
-
 let model;
-let currentLang = "uk";
+const langSel = document.getElementById('lang');
 
-const translations = {
-    uk: {
-        loading: "Завантаження...",
-        ready: "Завантаж фото",
-        analyzing: "Аналізуємо..."
-    },
-    en: {
-        loading: "Loading...",
-        ready: "Upload image",
-        analyzing: "Analyzing..."
-    }
+const uiLabels = {
+    uk: { scan: "СКАНУВАТИ ЇЖУ", loading: "ЗАВАНТАЖЕННЯ ...", cal: "Ккал", p: "Білки", f: "Жири", c: "Вуглеводи", unknown: "Невідомо" },
+    en: { scan: "SCAN FOOD", loading: "LOADING ...", cal: "Kcal", p: "Proteins", f: "Fats", c: "Carbs", unknown: "Unknown" }
 };
 
-const foodKeywords = [
-    "apple","banana","orange","pizza","burger","hotdog",
-    "sandwich","cake","donut","spaghetti","pasta",
-    "rice","soup","salad","steak","chicken","egg",
-    "cheese","bread","fries","ice cream","chocolate"
+const foodLibrary = [
+    {
+        keys: ['apple', 'granny smith', 'red delicious'],
+        name: { uk: 'Яблуко', en: 'Apple' },
+        cal: 52, p: 0.3, f: 0.2, c: 14
+    },
+    {
+        keys: ['bread', 'loaf', 'baguette', 'french loaf', 'toast', 'ciabatta'],
+        name: { uk: 'Хліб / Батон', en: 'Bread' },
+        cal: 265, p: 9, f: 3.2, c: 49
+    },
+    {
+        keys: ['pomegranate'],
+        name: { uk: 'Гранат', en: 'Pomegranate' },
+        cal: 83, p: 1.7, f: 1.2, c: 19
+    },
+    {
+        keys: ['corn', 'maize', 'ear of corn'],
+        name: { uk: 'Кукурудза', en: 'Corn' },
+        cal: 86, p: 3.2, f: 1.2, c: 19
+    },
+    {
+        keys: ['banana'],
+        name: { uk: 'Банан', en: 'Banana' },
+        cal: 89, p: 1.1, f: 0.3, c: 23
+    },
+    {
+        keys: ['pizza'],
+        name: { uk: 'Піца', en: 'Pizza' },
+        cal: 266, p: 11, f: 10, c: 33
+    },
+    {
+        keys: ['burger', 'cheeseburger', 'hamburger'],
+        name: { uk: 'Бургер', en: 'Burger' },
+        cal: 295, p: 15, f: 14, c: 30
+    },
+    {
+        keys: ['strawberry', 'berry'],
+        name: { uk: 'Полуниця', en: 'Strawberry' },
+        cal: 32, p: 0.7, f: 0.3, c: 8
+    },
+    {
+        keys: ['orange', 'citrus', 'tangerine'],
+        name: { uk: 'Апельсин', en: 'Orange' },
+        cal: 47, p: 0.9, f: 0.1, c: 12
+    },
+    {
+        keys: ['chicken', 'poultry', 'wing'],
+        name: { uk: 'Курка', en: 'Chicken' },
+        cal: 165, p: 31, f: 3.6, c: 0
+    },
+    {
+        keys: ['beef', 'steak', 'meat'],
+        name: { uk: 'Яловичина / Стейк', en: 'Beef' },
+        cal: 250, p: 26, f: 15, c: 0
+    },
+    {
+        keys: ['egg', 'boiled egg', 'omelette'],
+        name: { uk: 'Яйце', en: 'Egg' },
+        cal: 155, p: 13, f: 11, c: 1.1
+    },
+    {
+        keys: ['fish', 'salmon', 'tuna'],
+        name: { uk: 'Риба', en: 'Fish' },
+        cal: 200, p: 22, f: 12, c: 0
+    },
+    {
+        keys: ['potato', 'fries', 'french fries'],
+        name: { uk: 'Картопля', en: 'Potato' },
+        cal: 77, p: 2, f: 0.4, c: 17
+    },
+    {
+        keys: ['cucumber'],
+        name: { uk: 'Огірок', en: 'Cucumber' },
+        cal: 15, p: 0.7, f: 0.1, c: 3.6
+    },
+    {
+        keys: ['tomato'],
+        name: { uk: 'Помідор', en: 'Tomato' },
+        cal: 18, p: 0.9, f: 0.2, c: 3.9
+    },
+    {
+        keys: ['broccoli'],
+        name: { uk: 'Броколі', en: 'Broccoli' },
+        cal: 34, p: 2.8, f: 0.4, c: 7
+    },
+    {
+        keys: ['chocolate'],
+        name: { uk: 'Шоколад', en: 'Chocolate' },
+        cal: 546, p: 5, f: 31, c: 61
+    },
+    {
+        keys: ['cheese', 'cheddar', 'mozzarella'],
+        name: { uk: 'Сир', en: 'Cheese' },
+        cal: 402, p: 25, f: 33, c: 1.3
+    },
+    {
+        keys: ['pasta', 'spaghetti', 'noodle'],
+        name: { uk: 'Паста', en: 'Pasta' },
+        cal: 158, p: 6, f: 0.9, c: 31
+    },
+    {
+        keys: ['rice'],
+        name: { uk: 'Рис', en: 'Rice' },
+        cal: 130, p: 2.7, f: 0.3, c: 28
+    },
+    {
+        keys: ['avocado'],
+        name: { uk: 'Авокадо', en: 'Avocado' },
+        cal: 160, p: 2, f: 15, c: 9
+    },
+    {
+        keys: ['nut', 'almond', 'walnut'],
+        name: { uk: 'Горіхи', en: 'Nuts' },
+        cal: 600, p: 20, f: 50, c: 15
+    }
 ];
 
-const foodData = {
-    apple: {cal:52, protein:0.3, fat:0.2, carbs:14},
-    banana: {cal:89, protein:1.1, fat:0.3, carbs:23},
-    orange: {cal:47, protein:0.9, fat:0.1, carbs:12},
-    pizza: {cal:266, protein:11, fat:10, carbs:33},
-    burger: {cal:295, protein:17, fat:14, carbs:30},
-    sandwich: {cal:250, protein:12, fat:8, carbs:30},
-    cake: {cal:350, protein:4, fat:15, carbs:50},
-    donut: {cal:452, protein:4.9, fat:25, carbs:51},
-    pasta: {cal:131, protein:5, fat:1.1, carbs:25},
-    rice: {cal:130, protein:2.7, fat:0.3, carbs:28},
-    chicken: {cal:239, protein:27, fat:14, carbs:0},
-    egg: {cal:155, protein:13, fat:11, carbs:1.1},
-    cheese: {cal:402, protein:25, fat:33, carbs:1.3},
-    bread: {cal:265, protein:9, fat:3.2, carbs:49},
-    fries: {cal:312, protein:3.4, fat:15, carbs:41},
-    chocolate: {cal:546, protein:4.9, fat:31, carbs:61}
+async function init() {
+    const lang = langSel.value;
+    document.getElementById('uploadBtn').innerText = uiLabels[lang].loading;
+    model = await mobilenet.load();
+    updateUI();
+}
+
+function updateUI() {
+    const lang = langSel.value;
+    document.getElementById('uploadBtn').innerText = uiLabels[lang].scan;
+    document.getElementById('lab-cal').innerText = uiLabels[lang].cal;
+    document.getElementById('lab-p').innerText = uiLabels[lang].p;
+    document.getElementById('lab-f').innerText = uiLabels[lang].f;
+    document.getElementById('lab-c').innerText = uiLabels[lang].c;
+}
+
+langSel.addEventListener('change', updateUI);
+
+document.getElementById('imageInput').onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const img = document.getElementById('preview');
+    img.src = URL.createObjectURL(file);
+    img.style.display = 'block';
+
+    document.getElementById('results').style.display = 'none';
+    document.getElementById('loader').style.display = 'block';
+
+    img.onload = async () => {
+        const predictions = await model.classify(img);
+        findBestMatch(predictions);
+    };
 };
 
-function setText(key){
-    document.getElementById("result").innerText = translations[currentLang][key];
-}
+function findBestMatch(predictions) {
+    document.getElementById('loader').style.display = 'none';
+    const lang = langSel.value;
+    let found = null;
 
-function showLoader(show){
-    document.getElementById("loader").style.display = show ? "block" : "none";
-}
-
-async function loadModel(){
-    setText("loading");
-    model = await mobilenet.load();
-    setText("ready");
-}
-
-loadModel();
-
-document.getElementById("lang").addEventListener("change", (e)=>{
-    currentLang = e.target.value;
-    setText("ready");
-});
-
-document.getElementById("imageInput").addEventListener("change", async (event)=>{
-
-    const file = event.target.files[0];
-    if(!file) return;
-
-    const img = document.getElementById("preview");
-    img.src = URL.createObjectURL(file);
-    img.style.display = "block";
-
-    img.onload = async ()=>{
-
-        setText("analyzing");
-        showLoader(true);
-
-        const predictions = await model.classify(img);
-
-        showLoader(false);
-
-        const filtered = predictions.filter(p =>
-            foodKeywords.some(f => p.className.toLowerCase().includes(f))
+    for (let p of predictions) {
+        const pName = p.className.toLowerCase();
+        found = foodLibrary.find(item =>
+            item.keys.some(k => pName.includes(k))
         );
-
-        let best = filtered[0] || predictions[0];
-
-        document.getElementById("result").innerText =
-            best.className + " — " + (best.probability * 100).toFixed(2) + "%";
-
-        const name = Object.keys(foodData).find(f => best.className.toLowerCase().includes(f));
-
-        if(name){
-            const d = foodData[name];
-            document.getElementById("info").innerText =
-                "Calories: " + d.cal + " kcal | Protein: " + d.protein + "g | Fat: " + d.fat + "g | Carbs: " + d.carbs + "g";
-        } else {
-            document.getElementById("info").innerText = "";
-        }
+        if (found) break;
     }
 
-});
+    const resDiv = document.getElementById('results');
+    resDiv.style.display = 'block';
 
+    if (found) {
+        document.getElementById('foodName').innerText = found.name[lang];
+        document.getElementById('res-cal').innerText = found.cal;
+        document.getElementById('res-p').innerText = found.p + 'г';
+        document.getElementById('res-f').innerText = found.f + 'г';
+        document.getElementById('res-c').innerText = found.c + 'г';
+    } else {
+        document.getElementById('foodName').innerText = predictions[0].className.split(',')[0];
+        document.getElementById('res-cal').innerText = "?";
+        document.getElementById('res-p').innerText = "-";
+        document.getElementById('res-f').innerText = "-";
+        document.getElementById('res-c').innerText = "-";
+    }
+}
+
+init();
 </script>
-
 </body>
 </html>
