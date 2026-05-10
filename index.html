@@ -2799,11 +2799,11 @@ function updateRing(){
     ringC.setAttribute('stroke-dashoffset', `${-(pLen + fLen)}`);
   }
 
-  // Center
+ 
   tx('ringKcal', fmt(cal));
   tx('ringLbl', lang==='uk' ? 'ккал' : 'kcal');
 
-  // Legend
+ 
   const pPct = total > 0 ? Math.round(pCal/total*100) : 0;
   const fPct = total > 0 ? Math.round(fCal/total*100) : 0;
   const cPct = 100 - pPct - fPct;
@@ -2814,7 +2814,7 @@ function updateRing(){
   tx('ringValF', fmt(f)+'г'); tx('ringPctF', fPct+'%');
   tx('ringValC', fmt(c)+'г'); tx('ringPctC', cPct+'%');
 
-  // Cal badge
+ 
   const badge = document.getElementById('calBadge');
   if(badge){
     const calPer100 = currentItem.cal;
@@ -2839,12 +2839,12 @@ function updateRing(){
 
 function addCurrentToRation(){
   if(!currentItem) return;
-  // Add to rationItems with current grams
+ 
   rationItems.push({item: currentItem, grams: currentGrams, id: rationIdCounter++});
   renderRationItems();
   updateRationTotals();
   showRationToast();
-  // Scroll to ration section
+ 
   setTimeout(()=>{
     const sec = document.getElementById('rationSepLbl');
     if(sec) sec.scrollIntoView({behavior:'smooth', block:'center'});
@@ -2871,7 +2871,7 @@ function onGramManual(val){
   }
   v = Math.max(1, Math.min(9999, v));
   currentGrams = v;
-  // sync slider (clamp to slider range)
+ 
   document.getElementById('gramSlider').value = Math.min(1000, v);
   document.querySelectorAll('.gram-preset').forEach(b => {
     const bv = parseInt(b.textContent) * (b.textContent.includes('кг')||b.textContent.includes('kg') ? 1000 : 1);
@@ -2899,7 +2899,7 @@ function setGram(val){
   updateMacros();
 }
 
-// ─── RENDER RESULTS ───────────────────────────────────────────────────────
+
 function renderResults(preds){
   const match=findBestMatch(preds);
   const card=document.getElementById('resultCard');
@@ -2908,7 +2908,7 @@ function renderResults(preds){
   if(match){
     const{item,conf}=match;
     currentItem = item;
-    // reset gram slider to 100g on each new scan
+   
     currentGrams = 100;
     document.getElementById('gramSlider').value = 100;
     document.querySelectorAll('.gram-preset').forEach(b=>{
@@ -2978,8 +2978,8 @@ function showErr(msg){
   const c=document.getElementById('errCard'); c.textContent=msg; c.style.display='block';
 }
 
-// ─── RATION ───────────────────────────────────────────────────────────────
-let rationItems=[]; // [{item, grams, id}]
+
+let rationItems=[]; 
 let rationPendingItem=null;
 let rationIdCounter=0;
 
@@ -3032,7 +3032,7 @@ function rationSearchInput(val){
 
   if(!q){ sug.style.display='none'; return; }
 
-  // search DB by name and keys
+  
   const results=DB.filter(item=>{
     const n=(item.name.uk+' '+item.name.en+' '+item.keys.join(' ')).toLowerCase();
     return n.includes(q);
@@ -3063,7 +3063,7 @@ function rationSelectItem(dbIdx){
   document.getElementById('rationSuggestions').style.display='none';
   document.getElementById('rationSearch').value='';
 
-  // show add row
+  
   document.getElementById('rationAddEmoji').textContent=item.emoji;
   document.getElementById('rationAddName').textContent=item.name[lang];
   document.getElementById('rationGramInp').value=100;
@@ -3101,20 +3101,20 @@ function renderRationItems(){
   const empty=document.getElementById('rationEmpty');
   if(!rationItems.length){
     empty.style.display='block';
-    // remove all items except empty
+   
     Array.from(cont.children).forEach(c=>{ if(c!==empty) cont.removeChild(c); });
     return;
   }
   empty.style.display='none';
-  // rebuild
+  
   const existing=new Set(Array.from(cont.querySelectorAll('.ration-item')).map(e=>parseInt(e.dataset.id)));
-  // remove deleted
+ 
   Array.from(cont.querySelectorAll('.ration-item')).forEach(el=>{
     if(!rationItems.find(x=>x.id===parseInt(el.dataset.id))) el.remove();
   });
-  // add new ones
+  
   rationItems.forEach(entry=>{
-    if(existing.has(entry.id)) return; // already rendered
+    if(existing.has(entry.id)) return; 
     const r=entry.grams/100;
     const calVal=fmt1(entry.item.cal*r);
     const pVal=fmt1(entry.item.p*r);
@@ -3156,7 +3156,7 @@ function updateRationTotals(){
   document.getElementById('rtCarb').textContent=fmt1(c);
 }
 
-// close suggestions on outside click
+
 document.addEventListener('click',e=>{
   const sug=document.getElementById('rationSuggestions');
   if(!e.target.closest('.ration-card')) sug.style.display='none';
@@ -3188,9 +3188,7 @@ function fullReset(){
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
-// ══════════════════════════════════════════════════════════
-// ─── GOOGLE GEMINI VISION (FREE) ──────────────────────────
-// ══════════════════════════════════════════════════════════
+
 
 
 function geminiReady(){ return true; }
@@ -3285,7 +3283,7 @@ Important:
     if(!res.ok){
       const errMsg = data?.error?.message||`HTTP ${res.status}`;
       if(errMsg.includes('API_KEY_INVALID')||errMsg.includes('API key')){
-        // key error
+       
         throw new Error(lang==='uk'?'Невірний API ключ. Введіть правильний ключ.':'Invalid API key. Please enter a valid key.');
       }
       throw new Error(errMsg);
@@ -3302,7 +3300,7 @@ Important:
       return;
     }
 
-    // Update model status badge
+  
     const modelEl=document.getElementById('modelStatus');
     const modelTxt=document.getElementById('modelStatusTxt');
     if(modelEl){ modelEl.className='model-status ai'; modelTxt.textContent='Gemini Vision · безкоштовно · точність '+Math.min(99,result.confidence||88)+'%'; }
@@ -3321,9 +3319,7 @@ Important:
   }
 }
 
-// ══════════════════════════════════════════════════════════
-// ─── MEAL PLANNER ─────────────────────────────────────────
-// ══════════════════════════════════════════════════════════
+
 
 const PLANNER_TAGS = {
   uk: [
@@ -3418,7 +3414,7 @@ function togglePlannerTag(id, el){
     activePlannerTags.add(id);
     el.classList.add('active');
   }
-  // Auto-fill input with tag combo
+  
   const tags = PLANNER_TAGS[lang];
   const labels = [...activePlannerTags].map(tid=>{
     const t = tags.find(x=>x.id===tid);
@@ -3433,7 +3429,7 @@ function applyPlannerLang(){
   const isUk = lang==='uk';
   tx('plannerSepLbl', isUk ? 'ПЛАНУВАЛЬНИК ХАРЧУВАННЯ' : 'MEAL PLANNER');
   tx('plannerTitle', lang==='uk' ? '🍽️ Планувальник харчування' : '🍽️ Meal Planner');
-  tx('plannerSubtitle', isUk ? 'Локально · безкоштовно · без API' : 'Local · free · no API required');
+  tx('plannerSubtitle', isUk ? '' : '');
   tx('plannerTagsLbl', isUk ? 'ШВИДКІ ЗАПИТИ' : 'QUICK TAGS');
   const inp = document.getElementById('plannerInput');
   if(inp) inp.placeholder = isUk ? 'Наприклад: схуднення 1800 ккал, без глютену...' : 'e.g. weight loss 1800 kcal, gluten free...';
@@ -3449,7 +3445,7 @@ function applyPlannerLang(){
   renderPlannerTags();
 }
 
-// ─── LOCAL MEAL PLANNER (no API) ─────────────────────────────────────────
+
 
 const MEAL_PLANS = {
   lose: {
@@ -3727,7 +3723,7 @@ const MEAL_PLANS = {
   },
 };
 
-// Map tag IDs to plan keys
+
 const TAG_TO_PLAN = {
   lose:'lose', gain:'gain', maintain:'maintain', keto:'keto',
   vegan:'vegan', veggie:'vegan', ukr:'ukr', sport:'sport',
@@ -3882,7 +3878,7 @@ function addPlanToRation(){
   let added = 0;
   (currentMealPlan.meals||[]).forEach(meal=>{
     (meal.items||[]).forEach(item=>{
-      // Build a synthetic DB-like item from plan data
+   
       const grams = item.grams || 100;
       const factor = 100 / grams;
       rationItems.push({
